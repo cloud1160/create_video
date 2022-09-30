@@ -1,0 +1,7 @@
+willkommen in diesem video. jeder satz muss seinen platz haben.
+ende. ende. test. test.
+heute installieren wir den ausbildungsnachweisgenerator.
+#dies ist nur ein kommentar
+image=bla.png
+video=bla.mp4
+ende.

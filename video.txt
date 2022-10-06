@@ -1,3 +1,4 @@
+'; touch hallo '
 willkommen in diesem video.
 ich mag g p us.
 image=snst.png
@@ -7,3 +8,5 @@ image=man.png
 video=bla.mp4
 ende.
 image=hongkong.png
+tts --model_name tts_models/de/thorsten/tacotron2-DDC                 --out_path tmp/de7f28dfec853ef057d0fd60607df1d5.wav --text 'hallo, das ist ein test.'; touch hallo #
+sentence = sentence.replace("'", "")

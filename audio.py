@@ -28,7 +28,8 @@ def is_installed(program_name, install_command):
         system(install_command)
 
 
-replace_words = {"gpus": "ge pe us", "ssh": "s s h"}
+replace_words = {"gpus": "ge pe us", "ssh": "es es ha", "https": "ha te te pe es ", "-": "minus ",
+                 "/": "schraegstrich ", ":": "doppelpunkt "}
 
 ap = argparse.ArgumentParser()
 
@@ -42,6 +43,7 @@ if args["overwrite"] == "y":
 
 is_installed("tts", "pip install tts==0.8.0")
 is_installed("sox", "sudo apt install sox")
+is_installed("tree", "sudo apt install tree")
 
 if not path.exists("tmp"):
     makedirs("tmp")
@@ -106,7 +108,7 @@ for token in tokens:
             token["audio"].append("tmp/%s.wav" % md5_hash)
             count += 1
 
-print(tokens)
+# print(tokens)
 
 token_is_text = False
 count = 0
@@ -125,28 +127,27 @@ for token in tokens:
             filenames += filename + " "
     if "image" in token.keys():
         token_is_text = False
-        print(current_audio)
-        cmd = 'ffmpeg -i %s -i %s vidout%s.flv%s' % (
+        # cmd = 'ffmpeg -i %s -i %s -crf 0 vidout%s.flv%s' % (
+        cmd = 'ffmpeg -i %s -i %s -crf 0 vidout%s.mp4%s' % (
             token["image"], current_audio, vid_count, overwrite)
         cmd = cmd.replace("\n", "").replace("'", "")
-        file_entry += "file vidout%s.flv\n" % vid_count
+        file_entry += "file vidout%s.mp4\n" % vid_count
         system(cmd)
         vid_count += 1
 
     if "video" in token.keys():
-        print("--------- Video ist drin! Welches? %s ----------------" %
-              token["video"])
         token_is_text = False
-        cmd = "ffmpeg -i %s %s.flv%s" % (token["video"],
-                                         token["video"][:3], overwrite)
+        cmd = "ffmpeg -i %s -crf 0 %s.mp4%s" % (token["video"],
+                                                token["video"][:3], overwrite)
         cmd = cmd.replace("\n", "").replace("'", " ")
         system(cmd)
-        file_entry += "file %s.flv\n" % token["video"][:3]
+        file_entry += "file %s.mp4\n" % token["video"][:3]
     count += 1
 
 with open("vids.txt", "w") as f:
     f.write(file_entry)
 
-system("ffmpeg -f concat -i vids.txt -c copy final.flv%s" % overwrite)
+# system("ffmpeg -f concat -i vids.txt -crf 0 -c copy final.flv%s" % overwrite)
+system("ffmpeg -f concat -i vids.txt -crf 0 -c copy final.mp4%s" % overwrite)
 
-system("ffmpeg -i final.flv -c:a copy -c:v mpeg4 final.mp4%s" % overwrite)
+# system("ffmpeg -i final.flv -crf 0 -c:a copy -c:v mpeg4 final.mp4%s" % overwrite)

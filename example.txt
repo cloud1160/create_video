@@ -1,0 +1,6 @@
+Auf diesem Bild seht ihr einen Sonnenuntergang.
+image=sunset.png
+# Kommentare:
+# Um eine PDF Datei einzubinden.
+# image=file.pdf s=2
+# video=file.mp4

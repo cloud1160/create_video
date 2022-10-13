@@ -48,6 +48,7 @@ if args["overwrite"] == "y":
 is_installed("tts", "pip install tts==0.8.0")
 is_installed("sox", "sudo apt install sox")
 is_installed("tree", "sudo apt install tree")
+is_installed("pdf2image", "pip install pdf2image")
 
 if not path.exists("tmp"):
     makedirs("tmp")
@@ -125,8 +126,6 @@ for token in tokens:
                 --out_path tmp/%s.wav --text '%s'" % (md5_hash, sentence))
             token["audio"].append("tmp/%s.wav" % md5_hash)
             count += 1
-
-# print(tokens)
 
 token_is_text = False
 count = 0

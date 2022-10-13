@@ -1,11 +1,13 @@
 #!/usr/bin/python3.9
 
 import re
-from os import path, makedirs, system
+from os import path, makedirs, system, mkdir
+import site
 import sys
 import distutils.spawn
 from hashlib import md5
 import argparse
+from pdf2image import convert_from_path
 
 
 def dier(msg):
@@ -13,12 +15,12 @@ def dier(msg):
 
 
 def file_exists(entry):
-    if path.exists(entry.replace("\n", "")):
-        print("The file %s exists" % entry.replace("\n", ""))
+    if entry and path.exists(entry.replace("\n", "")):
+        # print("The file %s exists" % entry.replace("\n", ""))
         return True
-    else:
-        dier("The file %s doesn't exist programm stops." %
-             entry.replace("\n", ""))
+    return False
+    # dier("The file %s doesn't exist programm stops.".replace("\n", "") %
+    #      entry)
 
 
 def is_installed(program_name, install_command):
@@ -28,7 +30,7 @@ def is_installed(program_name, install_command):
         system(install_command)
 
 
-replace_words = {"gpus": "ge pe us", "ssh": "es es ha", "https": "ha te te pe es ", "-": "minus ",
+replace_words = {"gpus": "ge pe us", "ssh": "es es ha", "https": "ha te te pe es ", "-": " minus ",
                  "/": "schraegstrich ", ":": "doppelpunkt "}
 
 ap = argparse.ArgumentParser()
@@ -37,6 +39,8 @@ ap.add_argument("--file")
 ap.add_argument("--overwrite")
 args = vars(ap.parse_args())
 
+# when y is given all files neccessary for creating the video will be overwritten
+# automatically, without allowing it manually
 overwrite = ""
 if args["overwrite"] == "y":
     overwrite = " -y"
@@ -47,15 +51,18 @@ is_installed("tree", "sudo apt install tree")
 
 if not path.exists("tmp"):
     makedirs("tmp")
+if not path.exists("pdf"):
+    mkdir("pdf")
 
 Lines = []
+# the program uses by default the video.txt file, this can be changed when
+# another filename is given through the --file parameter
 filename = "video.txt"
-# dier(args["file"])
 if file_exists(args["file"]):
-    # dier("file %s exists" % args["file"])
     filename = args["file"]
 else:
-    dier("%s does not exist." % filename)
+    print("%s does not exist." % args["file"])
+
 try:
     with open(filename, 'r') as file1:
         Lines = file1.readlines()
@@ -63,8 +70,9 @@ except:
     dier("create and write a video.txt file")
 
 comment_regex = re.compile("^\s*#")
-png_regex = re.compile("^image=(.+\.\w+)$")
+image_regex = re.compile("^image=(.+\.\w+)")
 video_regex = re.compile("^video=(.+)$")
+site_regex = re.compile("^.*s=([0-9]+)\n$")
 
 tokens = []
 video_data = {}
@@ -75,11 +83,21 @@ for line in Lines:
     line.strip()
     if comment_regex.match(line):
         pass
-    elif fname := png_regex.match(line):
-        # print(line[6:].replace("\n", ""))
-        print(fname.group(1))
-        tokens.append({"image": fname.group(1)})
-        file_exists(fname.group(1))
+    elif fname := image_regex.match(line):
+        filename = fname.group(1)
+        if "png" in filename:
+            print(filename + " is an png")
+        if "pdf" in filename:
+            site_number = 1
+            if s_number := site_regex.match(line):
+                site_number = int(s_number.group(1))
+            print(filename + " is an pdf")
+            images = convert_from_path(
+                filename, 62, "pdf", site_number, site_number)
+            filename = '%s.png' % filename
+            images[0].save(filename, 'PNG')
+        tokens.append({"image": filename})
+        file_exists(filename)
     elif fname := video_regex.match(line):
         tokens.append({"video": fname.group(1)})
         file_exists(fname.group(1))
@@ -128,6 +146,8 @@ for token in tokens:
     if "image" in token.keys():
         token_is_text = False
         # cmd = 'ffmpeg -i %s -i %s -crf 0 vidout%s.flv%s' % (
+        # cmd = 'ffmpeg -i %s -i %s -crf 0 -vcodec mpeg4 -vf fps=30
+        # -video_track_timescale 90000 vidout%s.mp4%s' % (
         cmd = 'ffmpeg -i %s -i %s -crf 0 vidout%s.mp4%s' % (
             token["image"], current_audio, vid_count, overwrite)
         cmd = cmd.replace("\n", "").replace("'", "")
@@ -137,6 +157,8 @@ for token in tokens:
 
     if "video" in token.keys():
         token_is_text = False
+        # cmd = "ffmpeg -i %s -crf 0 -vcodec mpeg4 -vf fps=30
+        # -video_track_timescale 90000 %s.mp4%s" % (token["video"],
         cmd = "ffmpeg -i %s -crf 0 %s.mp4%s" % (token["video"],
                                                 token["video"][:3], overwrite)
         cmd = cmd.replace("\n", "").replace("'", " ")

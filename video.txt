@@ -1,12 +1,9 @@
-'; touch hallo '
 willkommen in diesem video.
-ich mag g p us.
-image=snst.png
-heute installieren wir den ausbildungsnachweisgenerator.
-#dies ist nur ein kommentar
-image=man.png
-video=bla.mp4
-ende.
-image=hongkong.png
-tts --model_name tts_models/de/thorsten/tacotron2-DDC                 --out_path tmp/de7f28dfec853ef057d0fd60607df1d5.wav --text 'hallo, das ist ein test.'; touch hallo #
-sentence = sentence.replace("'", "")
+gpus.
+60 minuten opensteeck haet.
+obwohl auf der folie 45 steht.
+image=60-minutes-of-openstack-hate.pdf s=1
+ausbildungsnachweis.
+image=nachweis_seite.png
+noch mehr opensteeck haet.
+image=60-minutes-of-openstack-hate.pdf s=1

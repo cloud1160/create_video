@@ -1,12 +1,20 @@
 #!/usr/bin/python3.9
-
-import re
-from os import path, makedirs, system, mkdir
-import site
-import sys
-import distutils.spawn
-from hashlib import md5
 import argparse
+from hashlib import md5
+import distutils.spawn
+import sys
+from os import path, makedirs, system, mkdir
+import re
+
+
+def is_installed(program_name, install_command):
+    if distutils.spawn.find_executable(program_name):
+        print("%s is installed: continue" % program_name)
+    else:
+        system(install_command)
+
+
+is_installed("pdf2image", "pip install pdf2image")
 from pdf2image import convert_from_path
 
 
@@ -23,11 +31,9 @@ def file_exists(entry):
     #      entry)
 
 
-def is_installed(program_name, install_command):
-    if distutils.spawn.find_executable(program_name):
-        print("%s is installed: continue" % program_name)
-    else:
-        system(install_command)
+def save_video_paths(file_entry):
+    with open("vids.txt", "w") as f:
+        f.write(file_entry)
 
 
 replace_words = {"gpus": "ge pe us", "ssh": "es es ha", "https": "ha te te pe es ", "-": " minus ",
@@ -37,6 +43,7 @@ ap = argparse.ArgumentParser()
 
 ap.add_argument("--file")
 ap.add_argument("--overwrite")
+ap.add_argument("--name")
 args = vars(ap.parse_args())
 
 # when y is given all files neccessary for creating the video will be overwritten
@@ -48,7 +55,6 @@ if args["overwrite"] == "y":
 is_installed("tts", "pip install tts==0.8.0")
 is_installed("sox", "sudo apt install sox")
 is_installed("tree", "sudo apt install tree")
-is_installed("pdf2image", "pip install pdf2image")
 
 if not path.exists("tmp"):
     makedirs("tmp")
@@ -165,8 +171,8 @@ for token in tokens:
         file_entry += "file %s.mp4\n" % token["video"][:3]
     count += 1
 
-with open("vids.txt", "w") as f:
-    f.write(file_entry)
+save_video_paths(file_entry)
+
 
 # system("ffmpeg -f concat -i vids.txt -crf 0 -c copy final.flv%s" % overwrite)
 system("ffmpeg -f concat -i vids.txt -crf 0 -c copy final.mp4%s" % overwrite)

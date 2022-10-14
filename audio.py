@@ -133,39 +133,39 @@ for token in tokens:
             token["audio"].append("tmp/%s.wav" % md5_hash)
             count += 1
 
-token_is_text = False
+last_token_was_audio = False
 count = 0
 vid_count = 0
 file_entry = ""
 for token in tokens:
-    if token_is_text and "audio" not in token.keys():
+    if last_token_was_audio and "audio" not in token.keys():
         system("sox %s conout%s.wav" % (filenames, count))
         current_audio = "conout%s.wav" % count
     if "audio" in token.keys():
-        if not token_is_text:
+        if not last_token_was_audio:
             filenames = ""
-        token_is_text = True
+            last_token_was_audio = True
 
         for filename in token["audio"]:
             filenames += filename + " "
     if "image" in token.keys():
-        token_is_text = False
-        # cmd = 'ffmpeg -i %s -i %s -crf 0 vidout%s.flv%s' % (
-        # cmd = 'ffmpeg -i %s -i %s -crf 0 -vcodec mpeg4 -vf fps=30
-        # -video_track_timescale 90000 vidout%s.mp4%s' % (
-        cmd = 'ffmpeg -i %s -i %s -crf 0 vidout%s.mp4%s' % (
-            token["image"], current_audio, vid_count, overwrite)
-        cmd = cmd.replace("\n", "").replace("'", "")
-        file_entry += "file vidout%s.mp4\n" % vid_count
-        system(cmd)
-        vid_count += 1
-
+        last_token_was_audio = False
+        # creating parts of the video with an image and an audio file
+        if current_audio:
+            cmd = 'ffmpeg -i %s -i %s -crf 0 vidout%s.mp4%s' % (
+                token["image"], current_audio, vid_count, overwrite)
+            cmd = cmd.replace("\n", "").replace("'", "")
+            file_entry += "file vidout%s.mp4\n" % vid_count
+            system(cmd)
+            vid_count += 1
+        else:
+            dier("No audio for this image. Write first a text and then the image")
     if "video" in token.keys():
-        token_is_text = False
-        # cmd = "ffmpeg -i %s -crf 0 -vcodec mpeg4 -vf fps=30
-        # -video_track_timescale 90000 %s.mp4%s" % (token["video"],
-        cmd = "ffmpeg -i %s -crf 0 %s.mp4%s" % (token["video"],
-                                                token["video"][:3], overwrite)
+        last_token_was_audio = False
+        cmd = "ffmpeg -i %s -crf 0 -pix_fmt yuv420p -vcodec mpeg4 -vf fps=30 \
+        -video_track_timescale 90000 %s.mp4%s" % (token["video"], overwrite)
+        # cmd = "ffmpeg -pix_fmt yuv420p -i %s -crf 0 %s.mp4%s" % (token["video"],
+        #                                         token["video"][:3], overwrite)
         cmd = cmd.replace("\n", "").replace("'", " ")
         system(cmd)
         file_entry += "file %s.mp4\n" % token["video"][:3]
@@ -173,8 +173,13 @@ for token in tokens:
 
 save_video_paths(file_entry)
 
+name = "final"
+if args["name"]:
+    name = args["name"]
 
+# dier(name)
 # system("ffmpeg -f concat -i vids.txt -crf 0 -c copy final.flv%s" % overwrite)
-system("ffmpeg -f concat -i vids.txt -crf 0 -c copy final.mp4%s" % overwrite)
+system("ffmpeg -f concat -i vids.txt -crf 0 -pix_fmt yuv420p -max_muxing_queue_size 9999 \
+ %s.mp4%s" % (name, overwrite))
 
 # system("ffmpeg -i final.flv -crf 0 -c:a copy -c:v mpeg4 final.mp4%s" % overwrite)

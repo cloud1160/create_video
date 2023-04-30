@@ -1,4 +1,4 @@
-#!/usr/bin/python3.9
+#!/usr/bin/python3
 import argparse
 from hashlib import md5
 import distutils.spawn

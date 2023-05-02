@@ -55,6 +55,7 @@ if args["overwrite"] == "y":
 is_installed("tts", "pip install tts==0.8.0")
 is_installed("sox", "sudo apt install sox")
 is_installed("tree", "sudo apt install tree")
+is_installed("espeak", "sudo apt install espeak")
 
 if not path.exists("tmp"):
     makedirs("tmp")
